@@ -7,9 +7,15 @@ and deploy. Postgres-first, TypeScript everywhere, security as a first-class
 concern.
 
 #### 🔭 What I'm building
-- **[otpkit](https://github.com/tsctupper/otpkit)** — zero-dependency, RFC-verified
-  HOTP/TOTP (2FA) for Node & TypeScript. Checked against the official
-  RFC 4226 / 6238 / 4648 test vectors in CI. _(public)_
+- **[@tsctupper/otpkit](https://github.com/tsctupper/otpkit)** — zero-dependency,
+  RFC-verified HOTP/TOTP (2FA) for Node & TypeScript. Published to
+  [npm](https://www.npmjs.com/package/@tsctupper/otpkit) with build provenance,
+  checked against the official RFC 4226 / 6238 / 4648 test vectors with 100% line
+  and branch coverage, and tested in CI on Node 18–24. _(public)_
+  `npm install @tsctupper/otpkit`
+
+  [![npm](https://img.shields.io/npm/v/@tsctupper/otpkit)](https://www.npmjs.com/package/@tsctupper/otpkit)
+  [![CI](https://github.com/tsctupper/otpkit/actions/workflows/ci.yml/badge.svg)](https://github.com/tsctupper/otpkit/actions/workflows/ci.yml)
 - **Private SaaS, in production** — a multi-tenant field-ops platform for
   construction punch lists that I design and run end to end: data model,
   RLS security, offline-capable PWA, and portals for every role.
