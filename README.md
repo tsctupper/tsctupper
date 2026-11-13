@@ -1,29 +1,49 @@
 # Tyler Tupper
 
-**Full-stack engineer & solo founder — production multi-tenant SaaS.**
+**I build software for the way construction work actually happens.**
 
-I build real products end to end: data model and security, backend, UI, CI/CD,
-and deploy. Postgres-first, TypeScript everywhere, security as a first-class
-concern.
+I'm a full-stack engineer and solo founder. I take products from data model to
+production, with a focus on practical workflows, secure access, and tools people
+can use in the field.
 
-#### 🔭 What I'm building
-- **[@tsctupper/otpkit](https://github.com/tsctupper/otpkit)** — zero-dependency,
-  RFC-verified HOTP/TOTP (2FA) for Node & TypeScript. Published to
-  [npm](https://www.npmjs.com/package/@tsctupper/otpkit) with build provenance,
-  checked against the official RFC 4226 / 6238 / 4648 test vectors with 100% line
-  and branch coverage, and tested in CI on Node 18–24. _(public)_
-  `npm install @tsctupper/otpkit`
+## What I'm building
 
-  [![npm](https://img.shields.io/npm/v/@tsctupper/otpkit)](https://www.npmjs.com/package/@tsctupper/otpkit)
-  [![CI](https://github.com/tsctupper/otpkit/actions/workflows/ci.yml/badge.svg)](https://github.com/tsctupper/otpkit/actions/workflows/ci.yml)
-- **Private SaaS, in production** — a multi-tenant field-ops platform for
-  construction punch lists that I design and run end to end: data model,
-  RLS security, offline-capable PWA, and portals for every role.
-  Supabase RLS · Next.js + React · Vercel.
+### Field operations software · Private, in production
 
-#### 🛠️ Tech
-TypeScript · Next.js · React · Node · Supabase / PostgreSQL · Tailwind · Vercel
+A platform for construction punch lists, with offline-capable workflows and
+portals for different roles. I design and run the full stack: database, access
+controls, backend, interface, and deployment.
 
-#### ⚙️ How I work
-Multi-tenant security by default (row-level security, least-privilege) ·
-migration-tracked schema · green-CI-gated PRs · security-reviewed changes.
+The engineering challenge: keep each organization's data isolated while giving
+people the access they need to get work done, including when connectivity is
+unreliable.
+
+### [otpkit](https://github.com/tsctupper/otpkit) · Open source
+
+The one-time codes behind authenticator apps, packaged as a small Node.js and
+TypeScript library with **zero runtime dependencies**.
+
+- HOTP and TOTP, plus provisioning URIs for authenticator enrollment.
+- Verified against official RFC test vectors, with 100% line and branch coverage.
+- Published to npm with build provenance; includes TypeScript types.
+
+```sh
+npm install @tsctupper/otpkit
+```
+
+[Read the code and examples](https://github.com/tsctupper/otpkit#readme) ·
+[View on npm](https://www.npmjs.com/package/@tsctupper/otpkit)
+
+[![npm](https://img.shields.io/npm/v/@tsctupper/otpkit)](https://www.npmjs.com/package/@tsctupper/otpkit)
+[![CI](https://github.com/tsctupper/otpkit/actions/workflows/ci.yml/badge.svg)](https://github.com/tsctupper/otpkit/actions/workflows/ci.yml)
+
+## What I bring to a team
+
+End-to-end ownership, from schema and security to the interface people use.
+I work with tenant isolation, role-based access, offline workflows, and automated
+checks that help keep changes safe to ship.
+
+**My stack:** TypeScript · React · Next.js · Node.js · PostgreSQL · Supabase · Tailwind · Vercel
+
+Follow along for practical product engineering: construction workflows,
+offline-capable apps, and focused open-source tools.
