@@ -1,29 +1,26 @@
 # Tyler Tupper
 
-**Full-stack engineer & solo founder — production multi-tenant SaaS.**
+I'm a full-stack engineer and solo founder. I build construction software for
+crews who need to keep a punch list moving even when the job site loses its
+connection. I work in TypeScript and React on the interface and PostgreSQL on
+the data model and access rules.
 
-I build real products end to end: data model and security, backend, UI, CI/CD,
-and deploy. Postgres-first, TypeScript everywhere, security as a first-class
-concern.
+## Open source · otpkit
 
-#### 🔭 What I'm building
-- **[@tsctupper/otpkit](https://github.com/tsctupper/otpkit)** — zero-dependency,
-  RFC-verified HOTP/TOTP (2FA) for Node & TypeScript. Published to
-  [npm](https://www.npmjs.com/package/@tsctupper/otpkit) with build provenance,
-  checked against the official RFC 4226 / 6238 / 4648 test vectors with 100% line
-  and branch coverage, and tested in CI on Node 18–24. _(public)_
-  `npm install @tsctupper/otpkit`
+I wrote [otpkit](https://github.com/tsctupper/otpkit) for Node.js applications
+that use authenticator codes at sign-in. It generates time-based and counter-based
+codes, builds enrollment URIs, and uses Node's built-in crypto with zero runtime
+dependencies.
 
-  [![npm](https://img.shields.io/npm/v/@tsctupper/otpkit)](https://www.npmjs.com/package/@tsctupper/otpkit)
-  [![CI](https://github.com/tsctupper/otpkit/actions/workflows/ci.yml/badge.svg)](https://github.com/tsctupper/otpkit/actions/workflows/ci.yml)
-- **Private SaaS, in production** — a multi-tenant field-ops platform for
-  construction punch lists that I design and run end to end: data model,
-  RLS security, offline-capable PWA, and portals for every role.
-  Supabase RLS · Next.js + React · Vercel.
+One design choice matters when a user submits the same code twice. A six-digit
+code can still be valid on the second try. The library's `matchTotp` function
+returns the time step that matched, so the application can record which step
+it has already accepted.
 
-#### 🛠️ Tech
-TypeScript · Next.js · React · Node · Supabase / PostgreSQL · Tailwind · Vercel
+```sh
+npm install @tsctupper/otpkit
+```
 
-#### ⚙️ How I work
-Multi-tenant security by default (row-level security, least-privilege) ·
-migration-tracked schema · green-CI-gated PRs · security-reviewed changes.
+[Try the quick start](https://github.com/tsctupper/otpkit#quick-start) ·
+[Read the standards tests](https://github.com/tsctupper/otpkit/blob/main/test/rfc.test.ts) ·
+[Browse releases](https://github.com/tsctupper/otpkit/releases)
