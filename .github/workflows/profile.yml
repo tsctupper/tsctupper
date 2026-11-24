@@ -72,8 +72,6 @@ jobs:
         run: test -s README.md && grep -q '[^[:space:]]' README.md
 
       - name: Check Markdown links, files and heading anchors
-        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
-        with:
-          lycheeVersion: v0.24.2
-          token: ''
-          args: --no-progress --include-fragments --exclude-all-private --max-retries 3 README.md
+        run: |
+          python3 -I -B .github/scripts/test_check_readme.py
+          python3 -I -B .github/scripts/check_readme.py
