@@ -28,21 +28,45 @@ jobs:
       - name: Check for dependency additions
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          # Optional externally installed command for a genuine first push.
+          ROOT_ONBOARD: ${{ vars.DEPENDENCY_ONBOARD_COMMAND }}
+          GIT_NO_REPLACE_OBJECTS: "1"
         run: |
-          git fetch --no-tags --depth=1 "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" "$BASE_SHA"
-          path=.github/scripts/dependency_inventory.py
-          test -s "$path"
-          guard="$RUNNER_TEMP/dependency_inventory.py"
-          if [[ "$BASE_SHA" == "77462a49c2769f4fb9bbac8ed52ce14e02ee8d9a" ]]; then
-            # Bootstrap from the reviewed scanner on this single pre-install revision.
-            echo "55e099ecea1aa9884bfd3ae0326d1cf0ab06e271ec0a9d2aaf61532b7d7e08de  $path" | sha256sum -c -
-            cp "$path" "$guard"
-          else
-            git show "$BASE_SHA:$path" > "$guard"
+          unknown() { echo "::error::Dependency state unknown. $1" >&2; exit 3; }
+          if [[ "$BASE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+            [[ "$GITHUB_EVENT_NAME" == push && "$ROOT_ONBOARD" == /* && -f "$ROOT_ONBOARD" ]] ||
+              unknown "A first push requires the independently installed onboarding command."
+            echo "71d9e38af2b0eea7fdfbd04e69a5e5688850f8cc4a36d362a089fca344815842  $ROOT_ONBOARD" | sha256sum -c - ||
+              unknown "The onboarding command differs from its reviewed digest."
+            # The external command checks raw parents and pins its external scanner and empty baseline.
+            exec python3 -I -B "$ROOT_ONBOARD" --repo . --ref "$GITHUB_SHA" --id "$GITHUB_REPOSITORY" --owner maintainer
           fi
-          scan=(python3 -I "$guard" --repo . --id "$GITHUB_REPOSITORY" --owner maintainer)
-          "${scan[@]}" --ref "$BASE_SHA" --out "$RUNNER_TEMP/dependency-baseline.json"
-          "${scan[@]}" --ref "$GITHUB_SHA" --baseline "$RUNNER_TEMP/dependency-baseline.json"
+
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$BASE_SHA" != "$GITHUB_SHA" ]] ||
+            unknown "The event needs a distinct, full base commit."
+          remote="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          if ! git merge-base --is-ancestor "$BASE_SHA" "$GITHUB_SHA" 2>/dev/null; then
+            history=()
+            if [[ "$(git rev-parse --is-shallow-repository)" == true ]]; then history+=(--unshallow); fi
+            git fetch --no-tags "${history[@]}" "$remote" "$BASE_SHA" "$GITHUB_SHA" || unknown "Incomplete history."
+          fi
+          [[ "$(git cat-file -t "$BASE_SHA")" == commit ]] || unknown "The base must be a commit."
+          git merge-base --is-ancestor "$BASE_SHA" "$GITHUB_SHA" || unknown "The base is not a proven ancestor."
+
+          policy="$RUNNER_TEMP/dependency-policy"
+          mkdir "$policy"
+          tools_ref="$BASE_SHA"
+          # Only the reviewed upgrade from this exact pre-install revision needs bootstrap pins.
+          if [[ "$BASE_SHA" == "e7b169d30f1b494632653e7a8bcd47d155415d2e" ]]; then tools_ref="$GITHUB_SHA"; fi
+          for file in dependency_inventory.py compare_dependencies.py; do
+            [[ -s ".github/scripts/$file" ]] || unknown "The candidate is missing a required policy file."
+            git show "$tools_ref:.github/scripts/$file" > "$policy/$file" || unknown "The policy file is unavailable."
+          done
+          if [[ "$tools_ref" != "$BASE_SHA" ]]; then
+            echo "9c9d5ab52878bc91f365ba8199d388ba9bd10a743347adc7348df058a8062ef6  $policy/dependency_inventory.py" | sha256sum -c - || unknown "Scanner digest mismatch."
+            echo "1a97437be25c09fa65087165d936ae66de0c48bcbeb9acc700c918cd086bd0e8  $policy/compare_dependencies.py" | sha256sum -c - || unknown "Comparison digest mismatch."
+          fi
+          python3 -I -B "$policy/compare_dependencies.py" "$GITHUB_REPOSITORY" "$BASE_SHA" "$GITHUB_SHA"
 
       - name: Check the profile README exists and has content
         run: test -s README.md && grep -q '[^[:space:]]' README.md
