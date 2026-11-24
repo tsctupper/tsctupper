@@ -25,6 +25,25 @@ jobs:
           git checkout --quiet --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
 
+      - name: Check for dependency additions
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          git fetch --no-tags --depth=1 "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" "$BASE_SHA"
+          path=.github/scripts/dependency_inventory.py
+          test -s "$path"
+          guard="$RUNNER_TEMP/dependency_inventory.py"
+          if [[ "$BASE_SHA" == "77462a49c2769f4fb9bbac8ed52ce14e02ee8d9a" ]]; then
+            # Bootstrap from the reviewed scanner on this single pre-install revision.
+            echo "55e099ecea1aa9884bfd3ae0326d1cf0ab06e271ec0a9d2aaf61532b7d7e08de  $path" | sha256sum -c -
+            cp "$path" "$guard"
+          else
+            git show "$BASE_SHA:$path" > "$guard"
+          fi
+          scan=(python3 -I "$guard" --repo . --id "$GITHUB_REPOSITORY" --owner maintainer)
+          "${scan[@]}" --ref "$BASE_SHA" --out "$RUNNER_TEMP/dependency-baseline.json"
+          "${scan[@]}" --ref "$GITHUB_SHA" --baseline "$RUNNER_TEMP/dependency-baseline.json"
+
       - name: Check the profile README exists and has content
         run: test -s README.md && grep -q '[^[:space:]]' README.md
 
