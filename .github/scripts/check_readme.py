@@ -41,6 +41,8 @@ def prose(text):
 
 
 def links(text):
+    if not text.strip():
+        raise CheckError("README is empty or contains only whitespace")
     found = []
     for number, line in prose(text):
         destinations = []
@@ -195,7 +197,7 @@ def check_link(readme, url):
 
 def main():
     readme = Path("README.md")
-    if readme.is_symlink():
+    if readme.is_symlink() or not readme.is_file():
         raise CheckError("README must be a regular repository file")
     entries = links(readme.read_text(encoding="utf-8"))
     failed = 0
