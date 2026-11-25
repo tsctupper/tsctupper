@@ -22,12 +22,17 @@ class MarkdownTests(unittest.TestCase):
         text += "`[code](ignored.md)`\n```sh\n[code](ignored.md)\n```\n"
         self.assertEqual(check.links(text), [(2, "docs/guide.md#usage"), (2, "#demo")])
 
-    def test_empty_and_unsupported_are_reported(self):
-        for text in ("", "Only prose", "[label][ref]", "[empty]()", "[unfinished](a",
+    def test_blank_readme_is_reported(self):
+        for text in ("", " \t\r\n", "\u2003\n"):
+            with self.subTest(text=text), self.assertRaisesRegex(check.CheckError, "only whitespace"):
+                check.links(text)
+
+    def test_unsupported_or_linkless_markdown_is_reported(self):
+        for text in ("Only prose", "[label][ref]", "[empty]()", "[unfinished](a",
                      "<a href='x'>label</a>", public(), "![image](preview.png)",
                      "[title](a.md 'title')", "[wrapped\nlabel](a)", "```\n[hidden](a)"):
             with self.subTest(text=text), self.assertRaises(check.CheckError):
-                check.links("[ok](guide.md)\n" + text if text not in ("", "Only prose") else text)
+                check.links("[ok](guide.md)\n" + text if text != "Only prose" else text)
 
     def test_repository_files_and_headings(self):
         with TemporaryDirectory() as tmp:

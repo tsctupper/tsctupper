@@ -33,10 +33,19 @@ jobs:
           GIT_NO_REPLACE_OBJECTS: "1"
         run: |
           unknown() { echo "::error::Dependency state unknown. $1" >&2; exit 3; }
+          verify_digest() {
+            python3 -I -S - "$1" "$2" <<'PYTHON'
+          from hashlib import file_digest
+          import sys
+
+          with open(sys.argv[1], "rb") as source:
+              sys.exit(file_digest(source, "sha256").hexdigest() != sys.argv[2])
+          PYTHON
+          }
           if [[ "$BASE_SHA" == "0000000000000000000000000000000000000000" ]]; then
             [[ "$GITHUB_EVENT_NAME" == push && "$ROOT_ONBOARD" == /* && -f "$ROOT_ONBOARD" ]] ||
               unknown "A first push requires the independently installed onboarding command."
-            echo "d61cbc109cddecead27f409f4ef510145b69393d2010f47321ada75e7ef6d801  $ROOT_ONBOARD" | sha256sum -c - ||
+            verify_digest "$ROOT_ONBOARD" "d61cbc109cddecead27f409f4ef510145b69393d2010f47321ada75e7ef6d801" ||
               unknown "The onboarding command differs from its reviewed digest."
             # The external command checks raw parents and pins its external scanner and empty baseline.
             exec python3 -I -B "$ROOT_ONBOARD" --repo . --ref "$GITHUB_SHA" --id "$GITHUB_REPOSITORY" --owner maintainer
@@ -54,7 +63,7 @@ jobs:
           git merge-base --is-ancestor "$BASE_SHA" "$GITHUB_SHA" || unknown "The base is not a proven ancestor."
 
           policy="$RUNNER_TEMP/dependency-policy"
-          mkdir "$policy"
+          python3 -I -S -c 'import os, sys; os.mkdir(sys.argv[1])' "$policy"
           tools_ref="$BASE_SHA"
           # Only the reviewed upgrade from this exact pre-install revision needs bootstrap pins.
           if [[ "$BASE_SHA" == "8a6e13ab6209a89af62c68c9120f6fbd5ddc39d1" ]]; then tools_ref="$GITHUB_SHA"; fi
@@ -63,13 +72,10 @@ jobs:
             git show "$tools_ref:.github/scripts/$file" > "$policy/$file" || unknown "The policy file is unavailable."
           done
           if [[ "$tools_ref" != "$BASE_SHA" ]]; then
-            echo "17f055b601285dcded272aea0617ce011e6cb791338638d63a4766f68ad241ce  $policy/dependency_inventory.py" | sha256sum -c - || unknown "Scanner digest mismatch."
-            echo "ba5f02322b1f119bd684767069e44f537464c3390a813560a0e986a00e8d03bd  $policy/compare_dependencies.py" | sha256sum -c - || unknown "Comparison digest mismatch."
+            verify_digest "$policy/dependency_inventory.py" "17f055b601285dcded272aea0617ce011e6cb791338638d63a4766f68ad241ce" || unknown "Scanner digest mismatch."
+            verify_digest "$policy/compare_dependencies.py" "ba5f02322b1f119bd684767069e44f537464c3390a813560a0e986a00e8d03bd" || unknown "Comparison digest mismatch."
           fi
           python3 -I -B "$policy/compare_dependencies.py" "$GITHUB_REPOSITORY" "$BASE_SHA" "$GITHUB_SHA"
-
-      - name: Check the profile README exists and has content
-        run: test -s README.md && grep -q '[^[:space:]]' README.md
 
       - name: Check Markdown links, files and heading anchors
         run: |
