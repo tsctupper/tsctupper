@@ -36,7 +36,7 @@ jobs:
           if [[ "$BASE_SHA" == "0000000000000000000000000000000000000000" ]]; then
             [[ "$GITHUB_EVENT_NAME" == push && "$ROOT_ONBOARD" == /* && -f "$ROOT_ONBOARD" ]] ||
               unknown "A first push requires the independently installed onboarding command."
-            echo "2a3d461fe4528edebda4829837573fde609e5a21d889118474e3244c50919cba  $ROOT_ONBOARD" | sha256sum -c - ||
+            echo "d61cbc109cddecead27f409f4ef510145b69393d2010f47321ada75e7ef6d801  $ROOT_ONBOARD" | sha256sum -c - ||
               unknown "The onboarding command differs from its reviewed digest."
             # The external command checks raw parents and pins its external scanner and empty baseline.
             exec python3 -I -B "$ROOT_ONBOARD" --repo . --ref "$GITHUB_SHA" --id "$GITHUB_REPOSITORY" --owner maintainer
@@ -57,13 +57,13 @@ jobs:
           mkdir "$policy"
           tools_ref="$BASE_SHA"
           # Only the reviewed upgrade from this exact pre-install revision needs bootstrap pins.
-          if [[ "$BASE_SHA" == "dae9db6fa67563cc4ee176685b6ac366b9de95bc" ]]; then tools_ref="$GITHUB_SHA"; fi
+          if [[ "$BASE_SHA" == "8a6e13ab6209a89af62c68c9120f6fbd5ddc39d1" ]]; then tools_ref="$GITHUB_SHA"; fi
           for file in dependency_inventory.py compare_dependencies.py; do
             [[ -s ".github/scripts/$file" ]] || unknown "The candidate is missing a required policy file."
             git show "$tools_ref:.github/scripts/$file" > "$policy/$file" || unknown "The policy file is unavailable."
           done
           if [[ "$tools_ref" != "$BASE_SHA" ]]; then
-            echo "bc936e74b7aaee061e0e68657e2d96d0d42b56618339b54ae891fe2cffc88b85  $policy/dependency_inventory.py" | sha256sum -c - || unknown "Scanner digest mismatch."
+            echo "17f055b601285dcded272aea0617ce011e6cb791338638d63a4766f68ad241ce  $policy/dependency_inventory.py" | sha256sum -c - || unknown "Scanner digest mismatch."
             echo "ba5f02322b1f119bd684767069e44f537464c3390a813560a0e986a00e8d03bd  $policy/compare_dependencies.py" | sha256sum -c - || unknown "Comparison digest mismatch."
           fi
           python3 -I -B "$policy/compare_dependencies.py" "$GITHUB_REPOSITORY" "$BASE_SHA" "$GITHUB_SHA"
